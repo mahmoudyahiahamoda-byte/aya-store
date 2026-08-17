@@ -15,7 +15,11 @@
     input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.95rem; }
     .btn { background: var(--success); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; }
     .orders-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .order-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 12px; }
+    .order-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 12px; border-right: 5px solid var(--accent); }
+    .stats-box { background: white; padding: 15px 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.1rem; }
+    .copy-btn { background: #cbd5e1; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-right: 8px; font-family: 'Cairo', sans-serif; }
+    .copy-btn:hover { background: #94a3b8; color: white; }
+    .delete-btn { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 0.85rem; margin-top: 10px; display: block; width: 100%; text-align: center; }
   </style>
 </head>
 <body>
@@ -24,6 +28,11 @@
     <h1>لوحة تحكم معرض آية 🛠️</h1>
     <p>إدارة المنتجات ومتابعة الطلبات الواردة</p>
   </header>
+
+  <div class="stats-box">
+    <span>إجمالي المبيعات المسجلة:</span>
+    <span id="salesSum" style="color: var(--success);">0 ج.م</span>
+  </div>
 
   <div class="form-box">
     <h3>إضافة صنف جديد للمتجر 📦</h3>
@@ -42,7 +51,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDYuLYwpX2p2vRKIUZ2y7d9jOlxF1y7aHE",
@@ -55,6 +64,7 @@
     };
 
     const db = getFirestore(initializeApp(firebaseConfig));
+    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
     // حماية صفحة الإدارة بكلمة سر
     window.onload = () => {
@@ -65,7 +75,7 @@
       }
     };
 
-    // حفظ المنتج مع دمج الاسم والمواصفات
+    // حفظ المنتج
     window.saveProduct = async () => {
       const name = document.getElementById("pName").value.trim();
       const specs = document.getElementById("pSpecs").value.trim();
@@ -98,32 +108,57 @@
       }
     };
 
-    // مراقبة الطلبات وعرضها في لوحة التحكم لحظياً مع تفاصيل الشحن والاستلام
+    // نسخ رقم التليفون
+    window.copyPhone = (phone) => {
+      navigator.clipboard.writeText(phone);
+      alert("تم نسخ رقم التليفون: " + phone);
+    };
+
+    // حذف الطلب من قاعدة البيانات والصفحة
+    window.deleteOrder = async (orderId) => {
+      if(confirm("هل أنت متأكد من حذف هذا الطلب بعد بيعه؟")) {
+        try {
+          await deleteDoc(doc(db, "orders", orderId));
+          alert("تم حذف الطلب بنجاح!");
+        } catch(e) {
+          alert("حدث خطأ أثناء الحذف.");
+        }
+      }
+    };
+
+    // مراقبة الطلبات وعرضها
     onSnapshot(collection(db, "orders"), (snapshot) => {
       const ordersDiv = document.getElementById("ordersList");
       if(snapshot.empty) {
         ordersDiv.innerHTML = "لا توجد طلبات حتى الآن.";
+        document.getElementById("salesSum").innerText = "0 ج.م";
         return;
       }
 
+      if(snapshot.docChanges().length > 0) {
+        audio.play().catch(e => console.log("Audio play blocked by browser policy"));
+      }
+
       let ordersHtml = "";
-      snapshot.forEach(doc => {
-        let o = doc.data();
+      let totalSalesSum = 0;
+
+      snapshot.forEach(docSnap => {
+        let o = docSnap.data();
+        let orderId = docSnap.id;
         let itemsHtml = o.items ? o.items.map(i => `▪️ ${i.name} (العدد: ${i.qty}) - ${i.price * i.qty} ج.م`).join('<br>') : '';
         
-        // حساب إجمالي المنتجات
         let productsTotal = o.items ? o.items.reduce((sum, i) => sum + (i.price * i.qty), 0) : 0;
-        
-        // تحديد مصاريف الشحن بناءً على اختيار العميل
         let isPickup = o.deliveryType && o.deliveryType.includes("استلام");
         let shippingFee = isPickup ? 0 : 30;
         let totalOrderPrice = productsTotal + shippingFee;
         let deliveryText = o.deliveryType || "توصيل لعنواني (30 ج.م)";
 
+        totalSalesSum += totalOrderPrice;
+
         ordersHtml += `
           <div class="order-card">
             <p><b>👤 العميل:</b> ${o.clientName}</p>
-            <p><b>📞 التليفون:</b> ${o.clientPhone}</p>
+            <p><b>📞 التليفون:</b> ${o.clientPhone} <button class="copy-btn" onclick="window.copyPhone('${o.clientPhone}')">📋 نسخ الرقم</button></p>
             <p><b>📍 العنوان:</b> ${o.clientAddress}</p>
             <p><b>🚚 طريقة الاستلام:</b> <span style="color:var(--accent);">${deliveryText}</span></p>
             <p><b>⏰ الوقت:</b> ${o.createdAt || 'غير محدد'}</p>
@@ -132,10 +167,13 @@
             <p style="margin-top: 5px;"><b>📦 إجمالي المنتجات:</b> ${productsTotal} ج.م</p>
             <p style="margin-top: 3px;"><b>🛵 الشحن:</b> ${shippingFee} ج.م</p>
             <p style="margin-top: 5px; color: var(--success);"><b>💰 الإجمالي الكلي: ${totalOrderPrice} ج.م</b></p>
+            <button class="delete-btn" onclick="window.deleteOrder('${orderId}')">🗑️ حذف الطلب (تم البيع)</button>
           </div>
         `;
       });
+
       ordersDiv.innerHTML = ordersHtml;
+      document.getElementById("salesSum").innerText = totalSalesSum + " ج.م";
     });
   </script>
 </body>
