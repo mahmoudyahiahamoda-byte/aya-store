@@ -57,7 +57,7 @@
     <h3 style="margin-bottom: 10px;">سلة المشتريات 🛒</h3>
     <div id="cartList" style="margin-bottom: 10px; color: #334155;">السلة فارغة حالياً</div>
     
-    <!-- اختيار طريقة الاستلام (توصيل أو استلام من المحل) -->
+    <!-- اختيار طريقة الاستلام -->
     <div style="margin: 10px 0; font-size: 0.9rem; background: #f1f5f9; padding: 10px; border-radius: 8px;">
       <p style="margin-bottom: 8px; font-weight: bold; color: var(--primary);">طريقة الاستلام:</p>
       <label style="margin-left: 15px; cursor: pointer;">
@@ -77,7 +77,6 @@
     <input type="text" id="cAddr" placeholder="العنوان بالتفصيل (العجمي، البيطاش...) *">
     <button class="btn checkout-btn" onclick="checkout()">إرسال الطلب 🚀</button>
 
-    <!-- زرار طلب صنف مش موجود في المعرض -->
     <a href="https://wa.me/201229803425?text=السلام%20عليكم،%20كنت%20باحتاج%20صنف%20معين%20وملاقتهوش%20على%20الموقع،%20هل%20متوفر%20عندكم؟" target="_blank" class="custom-request-btn">
       💬 مش لاقي طلبك؟ اطلبه مننا واتساب مباشر
     </a>
@@ -99,14 +98,12 @@
 
     const db = getFirestore(initializeApp(firebaseConfig));
     let allProducts = [];
-    
-    // ميزة حفظ السلة (لو الموبايل قفل أو الصفحة رستر، السلة بتفضل موجودة)
     let cart = JSON.parse(localStorage.getItem('aya_cart')) || [];
 
     onSnapshot(collection(db, "products"), (s) => {
       allProducts = s.docs.map(d => ({ id: d.id, ...d.data() }));
       renderProducts(allProducts);
-      updateCartUI(); // تحديث عرض السلة أول ما المنتجات تحمل
+      updateCartUI(); 
     });
 
     window.filterProducts = () => {
@@ -223,18 +220,20 @@
       if(!name || !phone || !addr) return alert("من فضلك اكتب الاسم ورقم التليفون والعنوان بالتفصيل!");
 
       try {
-        let deliveryType = document.querySelector('input[name="deliveryType"]:checked').value;
-        let shippingFee = (deliveryType === 'delivery') ? 30 : 0;
-        let deliveryTypeText = (deliveryType === 'delivery') ? "توصيل لعنواني (30 ج.م)" : "استلام من المحل (مجاناً 🏪)";
+        let deliveryTypeInput = document.querySelector('input[name="deliveryType"]:checked').value;
+        let deliveryTypeText = (deliveryTypeInput === 'delivery') ? "توصيل لعنواني (30 ج.م)" : "استلام من المحل (مجاناً 🏪)";
 
-        // 1. تسجيل الطلب في قاعدة البيانات مع طريقة الاستلام
+        // تسجيل الطلب في قاعدة البيانات متوافق تماماً مع شاشه الأدمن
         await addDoc(collection(db, "orders"), {
-          clientName: name, clientPhone: phone, clientAddress: addr,
+          clientName: name, 
+          clientPhone: phone, 
+          clientAddress: addr,
           deliveryType: deliveryTypeText,
-          items: cart, createdAt: new Date().toLocaleString('ar-EG')
+          items: cart, 
+          createdAt: new Date().toLocaleString('ar-EG')
         });
 
-        // 2. خصم المخزون أوتوماتيك
+        // خصم المخزون أوتوماتيك
         for(let item of cart) {
           const prod = allProducts.find(x => x.id === item.id);
           if(prod) {
@@ -242,7 +241,8 @@
           }
         }
 
-        // 3. تجهيز رسالة الواتساب المتكاملة
+        // تجهيز رسالة الواتساب المتكاملة
+        let shippingFee = (deliveryTypeInput === 'delivery') ? 30 : 0;
         let productsTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
         let finalSum = productsTotal + shippingFee;
         let itemsDetails = cart.map(i => `▪️ الصنف: ${i.name}\n   العدد: ${i.qty} | السعر: ${i.price * i.qty} ج.م`).join('\n\n');
@@ -263,7 +263,7 @@
 
         alert("تم إرسال الطلب وحفظه بنجاح يا محمود! 🚀");
         cart = [];
-        localStorage.removeItem('aya_cart'); // مسح ذاكرة السلة بعد اكتمال الطلب
+        localStorage.removeItem('aya_cart'); 
         updateCartUI();
         document.getElementById("cName").value = "";
         document.getElementById("cPhone").value = "";
