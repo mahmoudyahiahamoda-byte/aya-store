@@ -98,7 +98,7 @@
       }
     };
 
-    // مراقبة الطلبات وعرضها في لوحة التحكم لحظياً
+    // مراقبة الطلبات وعرضها في لوحة التحكم لحظياً مع تفاصيل الشحن والاستلام
     onSnapshot(collection(db, "orders"), (snapshot) => {
       const ordersDiv = document.getElementById("ordersList");
       if(snapshot.empty) {
@@ -110,16 +110,27 @@
       snapshot.forEach(doc => {
         let o = doc.data();
         let itemsHtml = o.items ? o.items.map(i => `▪️ ${i.name} (العدد: ${i.qty}) - ${i.price * i.qty} ج.م`).join('<br>') : '';
-        let totalOrderPrice = o.items ? o.items.reduce((sum, i) => sum + (i.price * i.qty), 0) : 0;
+        
+        // حساب إجمالي المنتجات
+        let productsTotal = o.items ? o.items.reduce((sum, i) => sum + (i.price * i.qty), 0) : 0;
+        
+        // تحديد مصاريف الشحن بناءً على اختيار العميل
+        let isPickup = o.deliveryType && o.deliveryType.includes("استلام");
+        let shippingFee = isPickup ? 0 : 30;
+        let totalOrderPrice = productsTotal + shippingFee;
+        let deliveryText = o.deliveryType || "توصيل لعنواني (30 ج.م)";
 
         ordersHtml += `
           <div class="order-card">
             <p><b>👤 العميل:</b> ${o.clientName}</p>
             <p><b>📞 التليفون:</b> ${o.clientPhone}</p>
             <p><b>📍 العنوان:</b> ${o.clientAddress}</p>
+            <p><b>🚚 طريقة الاستلام:</b> <span style="color:var(--accent);">${deliveryText}</span></p>
             <p><b>⏰ الوقت:</b> ${o.createdAt || 'غير محدد'}</p>
             <hr style="margin: 8px 0; border:0; border-top:1px solid #cbd5e1;">
             <p><b>🛒 الأصناف:</b><br>${itemsHtml}</p>
+            <p style="margin-top: 5px;"><b>📦 إجمالي المنتجات:</b> ${productsTotal} ج.م</p>
+            <p style="margin-top: 3px;"><b>🛵 الشحن:</b> ${shippingFee} ج.م</p>
             <p style="margin-top: 5px; color: var(--success);"><b>💰 الإجمالي الكلي: ${totalOrderPrice} ج.م</b></p>
           </div>
         `;
