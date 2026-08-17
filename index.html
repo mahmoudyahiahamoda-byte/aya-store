@@ -59,7 +59,7 @@
     <input type="text" id="cName" placeholder="اسمك الكريم *">
     <input type="tel" id="cPhone" placeholder="رقم التليفون *">
     <input type="text" id="cAddr" placeholder="العنوان بالتفصيل (العجمي، البيطاش...) *">
-    <button class="btn checkout-btn" onclick="checkout()">تأكيد وإرسال الطلب (موقع + واتساب) 🚀</button>
+    <button class="btn checkout-btn" onclick="checkout()">إرسال الطلب 🚀</button>
   </div>
 
   <script type="module">
@@ -166,7 +166,7 @@
         total += subtotal;
         return `
           <div class="cart-item">
-            <span><b>${i.name}</b> (العدد: ${i.qty}) - ${subtotal} ج.م</span>
+            <span><b>🔹 ${i.name}</b> (العدد: ${i.qty}) - السعر: ${subtotal} ج.م</span>
             <button class="remove-btn" onclick="window.removeFromCart('${i.id}')">حذف</button>
           </div>
         `;
@@ -200,9 +200,9 @@
 
         // 3. تجهيز رسالة الواتساب بشكل مرتب ونظيف بدون رموز غريبة
         let totalSum = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        let itemsDetails = cart.map(i => `- ${i.name} (العدد: ${i.qty}) = ${i.price * i.qty} ج.م`).join('\n');
+        let itemsDetails = cart.map(i => `▪️ الصنف: ${i.name}\n   العدد: ${i.qty} | السعر الإجمالي: ${i.price * i.qty} ج.م`).join('\n\n');
         
-        let whatsappMessage = `طلب جديد من الموقع ⚡:\n` +
+        let whatsappMessage = `طلب جديد من الموقع ⚡:\n\n` +
           `👤 الاسم: ${name}\n` +
           `📞 التليفون: ${phone}\n` +
           `📍 العنوان: ${addr}\n\n` +
