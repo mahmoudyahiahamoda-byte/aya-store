@@ -3,98 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة التحكم الشاملة | معرض آية</title>
+  <title>معرض آية | لوحة التحكم</title>
   <style>
-    :root { --primary: #0f172a; --danger: #ef4444; --success: #16a34a; --bg: #f8fafc; }
+    :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; --danger: #ef4444; --bg: #f8fafc; }
     * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--primary); padding: 15px; max-width: 900px; margin: 0 auto; }
     header { background: var(--primary); color: white; padding: 1.2rem; text-align: center; border-radius: 12px; margin-bottom: 20px; }
-    header h1 { color: #feee00; font-size: 1.3rem; }
-    
-    .card { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .card h3 { margin-bottom: 12px; color: var(--primary); font-size: 1.1rem; }
-    
-    input { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.95rem; }
-    .btn { background: var(--success); color: white; border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; }
-    
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; }
-    th { background: #f1f5f9; }
-    
-    .action-btn { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-    .edit-btn { background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 5px; }
+    header h1 { color: #feee00; font-size: 1.4rem; }
+    .form-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .form-box h3 { margin-bottom: 15px; color: var(--primary); }
+    input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.95rem; }
+    .btn { background: var(--success); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+    .orders-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .order-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>لوحة الإدارة والتحكم الشاملة ⚙️</h1>
+    <h1>لوحة تحكم معرض آية 🛠️</h1>
+    <p>إدارة المنتجات ومتابعة الطلبات الواردة</p>
   </header>
 
-  <!-- إضافة منتج -->
-  <div class="card">
-    <h3>إضافة صنف جديد للمخزن والمحل 📦</h3>
-    <input type="text" id="pName" placeholder="اسم المنتج (مثال: سلك عيار 3 مم)">
+  <div class="form-box">
+    <h3>إضافة صنف جديد للمتجر 📦</h3>
+    <input type="text" id="pName" placeholder="اسم المنتج الأساسي (مثلاً: لمبة ليد)">
+    <input type="text" id="pSpecs" placeholder="المواصفات (مثلاً: 12 وات - أبيض - توشيبا)">
+    <input type="text" id="pImg" placeholder="رابط صورة المنتج (URL)">
     <input type="number" id="pPrice" placeholder="السعر (بالجنيه)">
     <input type="number" id="pStock" placeholder="الكمية المتاحة في المخزن">
-    <input type="text" id="pImg" placeholder="رابط الصورة (اختياري)">
-    <button class="btn" onclick="addProduct()">حفظ وإضافة المنتج ✨</button>
+    <button class="btn" onclick="saveProduct()">حفظ وإضافة الصنف للموقع 🚀</button>
   </div>
 
-  <!-- إدارة المنتجات الحالية -->
-  <div class="card">
-    <h3>إدارة وتعديل مخزون المنتجات الحالية 📊</h3>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>المنتج</th>
-            <th>السعر</th>
-            <th>المخزون</th>
-            <th>إجراء</th>
-          </tr>
-        </thead>
-        <tbody id="productsBody">
-          <tr><td colspan="4" style="text-align:center;">جاري جلب المنتجات...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- الطلبات الواردة -->
-  <div class="card">
-    <h3>الطلبات الواردة من العملاء 📋</h3>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>العميل والتليفون</th>
-            <th>الأصناف المطلوبة</th>
-            <th>العنوان</th>
-            <th>إجراء</th>
-          </tr>
-        </thead>
-        <tbody id="ordersBody">
-          <tr><td colspan="4" style="text-align:center;">جاري جلب الطلبات...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="orders-box">
+    <h3>طلبات العملاء الواردة 📋</h3>
+    <div id="ordersList" style="color: #64748b; margin-top: 10px;">جاري تحميل الطلبات...</div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // حماية اللوحة
-    if(sessionStorage.getItem("aya_auth") !== "true") {
-      const pass = prompt("🔐 أدخل كلمة سر الإدارة الخاصة بمعرض آية:");
-      if(pass === "Aya@2026") {
-        sessionStorage.setItem("aya_auth", "true");
-      } else {
-        alert("كلمة السر خاطئة!");
-        window.location.href = "index.html";
-      }
-    }
+    import { getFirestore, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDYuLYwpX2p2vRKIUZ2y7d9jOlxF1y7aHE",
@@ -108,91 +56,76 @@
 
     const db = getFirestore(initializeApp(firebaseConfig));
 
-    window.addProduct = async () => {
+    // حماية صفحة الإدارة بكلمة سر
+    window.onload = () => {
+      const pass = prompt("من فضلك أدخل كلمة سر لوحة التحكم:");
+      if(pass !== "Aya@2026") {
+        alert("كلمة السر غير صحيحة!");
+        document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>غير مسموح لك بالدخول!</h2>";
+      }
+    };
+
+    // حفظ المنتج مع دمج الاسم والمواصفات
+    window.saveProduct = async () => {
       const name = document.getElementById("pName").value.trim();
+      const specs = document.getElementById("pSpecs").value.trim();
+      const img = document.getElementById("pImg").value.trim();
       const price = Number(document.getElementById("pPrice").value);
       const stock = Number(document.getElementById("pStock").value);
-      const img = document.getElementById("pImg").value.trim();
 
       if(!name || !price || isNaN(stock)) {
-        alert("من فضلك اكتب اسم المنتج والسعر والمخزون!");
+        alert("من فضلك أدخل اسم المنتج، السعر، والكمية على الأقل!");
         return;
       }
 
       try {
-        await addDoc(collection(db, "products"), { name, price, stock, img });
-        alert("تمت الإضافة بنجاح! 🚀");
+        let finalFullName = specs ? `${name} (${specs})` : name;
+        await addDoc(collection(db, "products"), {
+          name: finalFullName,
+          img: img || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400",
+          price: price,
+          stock: stock
+        });
+
+        alert("تم إضافة المنتج بنجاح إلى الموقع وسيعرض فوراً!");
         document.getElementById("pName").value = "";
+        document.getElementById("pSpecs").value = "";
+        document.getElementById("pImg").value = "";
         document.getElementById("pPrice").value = "";
         document.getElementById("pStock").value = "";
-        document.getElementById("pImg").value = "";
       } catch(e) {
-        alert("حدث خطأ أثناء الإضافة.");
+        alert("حدث خطأ أثناء الحفظ، تأكد من الاتصال بالإنترنت.");
       }
     };
 
-    // جلب وعرض المنتجات للإدارة
-    onSnapshot(collection(db, "products"), (s) => {
-      const tbody = document.getElementById("productsBody");
-      if(s.empty) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">لا توجد منتجات مسجلة.</td></tr>`;
+    // مراقبة الطلبات وعرضها في لوحة التحكم لحظياً
+    onSnapshot(collection(db, "orders"), (snapshot) => {
+      const ordersDiv = document.getElementById("ordersList");
+      if(snapshot.empty) {
+        ordersDiv.innerHTML = "لا توجد طلبات حتى الآن.";
         return;
       }
-      tbody.innerHTML = s.docs.map(d => {
-        const p = d.data();
-        return `
-          <tr>
-            <td><b>${p.name}</b></td>
-            <td>${p.price} ج.م</td>
-            <td>${p.stock}</td>
-            <td>
-              <button class="edit-btn" onclick="window.updateStock('${d.id}', ${p.stock})">تعديل المخزون</button>
-              <button class="action-btn" onclick="window.deleteProduct('${d.id}')">حذف</button>
-            </td>
-          </tr>
+
+      let ordersHtml = "";
+      snapshot.forEach(doc => {
+        let o = doc.data();
+        let itemsHtml = o.items ? o.items.map(i => `▪️ ${i.name} (العدد: ${i.qty}) - ${i.price * i.qty} ج.م`).join('<br>') : '';
+        let totalOrderPrice = o.items ? o.items.reduce((sum, i) => sum + (i.price * i.qty), 0) : 0;
+
+        ordersHtml += `
+          <div class="order-card">
+            <p><b>👤 العميل:</b> ${o.clientName}</p>
+            <p><b>📞 التليفون:</b> ${o.clientPhone}</p>
+            <p><b>📍 العنوان:</b> ${o.clientAddress}</p>
+            <p><b>⏰ الوقت:</b> ${o.createdAt || 'غير محدد'}</p>
+            <hr style="margin: 8px 0; border:0; border-top:1px solid #cbd5e1;">
+            <p><b>🛒 الأصناف:</b><br>${itemsHtml}</p>
+            <p style="margin-top: 5px; color: var(--success);"><b>💰 الإجمالي الكلي: ${totalOrderPrice} ج.م</b></p>
+          </div>
         `;
-      }).join('');
+      });
+      ordersDiv.innerHTML = ordersHtml;
     });
-
-    window.updateStock = async (id, currentStock) => {
-      const newStock = prompt("أدخل كمية المخزون الجديدة:", currentStock);
-      if(newStock !== null && !isNaN(newStock)) {
-        await updateDoc(doc(db, "products", id), { stock: Number(newStock) });
-      }
-    };
-
-    window.deleteProduct = async (id) => {
-      if(confirm("هل أنت متأكد من حذف هذا المنتج نهائياً؟")) {
-        await deleteDoc(doc(db, "products", id));
-      }
-    };
-
-    // مراقبة وعرض الطلبات
-    onSnapshot(collection(db, "orders"), (s) => {
-      const tbody = document.getElementById("ordersBody");
-      if(s.empty) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">لا توجد طلبات جديدة حالياً.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = s.docs.map(d => {
-        const o = d.data();
-        const itemsText = o.items ? o.items.map(i => `${i.name} (${i.qty})`).join('، ') : 'بدون أصناف';
-        return `
-          <tr>
-            <td><b>${o.clientName}</b><br><a href="tel:${o.clientPhone}" style="color:#2563eb;">📞 ${o.clientPhone}</a></td>
-            <td>${itemsText}</td>
-            <td>${o.clientAddress}</td>
-            <td><button class="action-btn" style="background:var(--success);" onclick="window.deleteOrder('${d.id}')">تم التسليم ✅</button></td>
-          </tr>
-        `;
-      }).join('');
-    });
-
-    window.deleteOrder = async (id) => {
-      if(confirm("هل تم تسليم الطلب وحذفه من القائمة؟")) {
-        await deleteDoc(doc(db, "orders", id));
-      }
-    };
   </script>
 </body>
 </html>
