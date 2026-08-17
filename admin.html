@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة الإدارة - معرض آية ⚙️</title>
+  <title>لوحة الإدارة والمخزون - معرض آية ⚙️</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -43,12 +43,18 @@
 
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.85rem; }
-    th, td { padding: 0.8rem; border-bottom: 1px solid var(--border-color); }
+    th, td { padding: 0.8rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     th { background: #f1f5f9; font-weight: 700; color: var(--text-muted); }
     
-    .product-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; background: #f1f5f9; border: 1px solid var(--border-color); }
-    .action-btn { background: #fee2e2; color: var(--danger); border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.75rem; }
-    .action-btn:hover { background: #fecaca; }
+    .product-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: #f1f5f9; border: 1px solid var(--border-color); }
+    .action-btns { display: flex; flex-direction: column; gap: 5px; }
+    .btn-action { border: none; padding: 0.3rem 0.5rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; color: white; text-align: center; }
+    .btn-edit { background: #0284c7; }
+    .btn-edit:hover { background: #0369a1; }
+    .btn-minus { background: #f59e0b; }
+    .btn-minus:hover { background: #d97706; }
+    .btn-delete { background: #ef4444; }
+    .btn-delete:hover { background: #dc2626; }
 
     footer { background: var(--primary); color: #94a3b8; text-align: center; padding: 1.5rem; margin-top: 3rem; font-size: 0.85rem; }
     footer span { color: #feee00; font-weight: bold; }
@@ -59,7 +65,7 @@
   <header>
     <div class="header-container">
       <div class="logo-area">
-        <h1>معرض آية - لوحة الإدارة ⚙️</h1>
+        <h1>معرض آية - إدارة المخزون ⚙️</h1>
       </div>
       <div class="header-actions">
         <a href="index.html" class="nav-btn">المتجر 🏠</a>
@@ -71,7 +77,7 @@
     
     <!-- قسم إضافة منتج جديد -->
     <div class="card">
-      <div class="card-title">➕ إضافة منتج جديد</div>
+      <div class="card-title">➕ إضافة منتج جديد للمخزون</div>
       <form id="addProductForm">
         <div class="form-group">
           <label class="form-label">اسم المنتج</label>
@@ -94,8 +100,13 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">الكمية المتاحة بالمخزون</label>
+          <input type="number" id="pStock" class="form-input" placeholder="مثال: 10" value="1" required>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">رابط الصورة (Image URL)</label>
-          <input type="url" id="pImg" class="form-input" placeholder="ضع رابط الصورة هنا (اختياري)">
+          <input type="url" id="pImg" class="form-input" placeholder="ضع رابط الصورة هنا">
         </div>
 
         <div class="form-group">
@@ -103,26 +114,25 @@
           <input type="text" id="pDesc" class="form-input" placeholder="تفاصيل سريعة...">
         </div>
 
-        <button type="submit" class="submit-btn">حفظ وإضافة المنتج 🚀</button>
+        <button type="submit" class="submit-btn">حفظ المنتج في المخزن 🚀</button>
       </form>
     </div>
 
-    <!-- قسم قائمة المنتجات الحالية -->
+    <!-- قسم قائمة المخزون الحالي والتعديل -->
     <div class="card">
-      <div class="card-title">📋 إدارة المخزون الحالي</div>
+      <div class="card-title">📦 مراقبة وتعديل المخزون والأسعار</div>
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
-              <th>الصورة</th>
-              <th>الاسم والقسم</th>
-              <th>السعر</th>
-              <th>إجراء</th>
+              <th>صورة</th>
+              <th>البيانات</th>
+              <th>التحكم والتعديل</th>
             </tr>
           </thead>
           <tbody id="adminProductsTable">
             <tr>
-              <td colspan="4" style="text-align: center; color: var(--text-muted);">جاري جلب المنتجات...</td>
+              <td colspan="3" style="text-align: center; color: var(--text-muted);">جاري تحميل المخزون...</td>
             </tr>
           </tbody>
         </table>
@@ -135,10 +145,19 @@
     <p>جميع حقوق الطبع والنشر محفوظة © 2026 <span>معرض آية</span> - El Agami, Alexandria</p>
   </footer>
 
-  <!-- السكربت والاتصال بفايربيس -->
+  <!-- السكربت وحماية الباسورد والفايربيس -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // --- كلمة السر المحمية ---
+    const secretPassword = "aya-2026-store";
+    const userPassword = prompt("يرجى إدخال كلمة سر الإدارة:");
+    
+    if (userPassword !== secretPassword) {
+      alert("كلمة سر خاطئة! سيتم تحويلك للمتجر.");
+      window.location.href = "index.html";
+    }
 
     const firebaseConfig = {
       apiKey: "AIzaSyDYuLYwpX2p2vRKIUZ2y7d9jOlxF1y7aHE",
@@ -153,58 +172,113 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // جلب المنتجات وعرضها في جدول الإدارة
+    // جلب المنتجات وعرضها في الجدول مع زرار التعديل والبيع والحذف
     onSnapshot(collection(db, "products"), (snapshot) => {
       const tableBody = document.getElementById("adminProductsTable");
       tableBody.innerHTML = "";
 
       if (snapshot.empty) {
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">لا توجد منتجات مسجلة حالياً.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">المخزون فارغ حالياً.</td></tr>`;
         return;
       }
 
       snapshot.forEach((documentSnapshot) => {
         const p = documentSnapshot.data();
         const pId = documentSnapshot.id;
-        const imgSrc = p.img ? p.img : 'https://via.placeholder.com/45';
+        const imgSrc = p.img ? p.img : 'https://via.placeholder.com/40';
+        const currentStock = p.stock !== undefined ? p.stock : 1;
+        const currentPrice = p.price !== undefined ? p.price : 0;
 
         tableBody.innerHTML += `
           <tr>
-            <td><img src="${imgSrc}" class="product-thumb" onerror="this.src='https://via.placeholder.com/45'"></td>
-            <td><strong>${p.name || ''}</strong><br><small style="color:var(--text-muted);">${p.category || ''}</small></td>
-            <td>${p.price || 0} ج.م</td>
-            <td><button class="action-btn" onclick="window.deleteProduct('${pId}')">حذف</button></td>
+            <td><img src="${imgSrc}" class="product-thumb" onerror="this.src='https://via.placeholder.com/40'"></td>
+            <td>
+              <strong>${p.name || ''}</strong><br>
+              <span style="color:var(--accent); font-weight:bold;">السعر: ${currentPrice} ج.م</span> | 
+              <span style="color: ${currentStock > 0 ? '#0284c7' : 'red'}; font-weight:bold;">المخزون: ${currentStock}</span><br>
+              <small style="color:var(--text-muted);">${p.category || ''}</small>
+            </td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-action btn-edit" onclick="window.editProduct('${pId}', '${p.name}', ${currentPrice}, ${currentStock})">تعديل ✍️</button>
+                <button class="btn-action btn-minus" onclick="window.decreaseStock('${pId}', ${currentStock})">بيع (-1) 🔻</button>
+                <button class="btn-action btn-delete" onclick="window.deleteProduct('${pId}')">حذف 🗑️</button>
+              </div>
+            </td>
           </tr>
         `;
       });
     });
 
-    // إضافة منتج جديد لقاعدة البيانات (مطابق تماماً لـ index.html)
+    // إضافة منتج جديد
     document.getElementById("addProductForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       
       const name = document.getElementById("pName").value;
       const category = document.getElementById("pCategory").value;
       const price = Number(document.getElementById("pPrice").value);
+      const stock = Number(document.getElementById("pStock").value);
       const img = document.getElementById("pImg").value || 'https://via.placeholder.com/150';
       const description = document.getElementById("pDesc").value;
 
       try {
         await addDoc(collection(db, "products"), {
-          name, category, price, img, description
+          name, category, price, stock, img, description
         });
         
-        alert("تم إضافة المنتج بنجاح وظهر في المتجر! ⚡");
+        alert("تم إضافة المنتج والمخزون بنجاح! ⚡");
         document.getElementById("addProductForm").reset();
       } catch (error) {
-        alert("حدث خطأ أثناء الحفظ، تأكد من الاتصال.");
+        alert("حدث خطأ أثناء الحفظ.");
         console.error(error);
       }
     });
 
-    // حذف منتج
+    // دالة تعديل السعر والكمية مباشرة
+    window.editProduct = async (id, oldName, oldPrice, oldStock) => {
+      const newPriceStr = prompt(`تعديل سعر المنتج (${oldName}):`, oldPrice);
+      if (newPriceStr === null) return; // لو عمل إلغاء
+      
+      const newStockStr = prompt(`تعديل كمية المخزون للمنتج (${oldName}):`, oldStock);
+      if (newStockStr === null) return;
+
+      const newPrice = Number(newPriceStr);
+      const newStock = Number(newStockStr);
+
+      if (isNaN(newPrice) || isNaN(newStock)) {
+        return alert("من فضلك أدخل أرقام صحيحة للسعر والكمية!");
+      }
+
+      try {
+        const productRef = doc(db, "products", id);
+        await updateDoc(productRef, {
+          price: newPrice,
+          stock: newStock
+        });
+        alert("تم تحديث السعر والكمية بنجاح! ✅");
+      } catch (error) {
+        alert("حدث خطأ أثناء التحديث.");
+      }
+    };
+
+    // تقليل الكمية بنزول طلب (-1)
+    window.decreaseStock = async (id, currentStock) => {
+      if (currentStock <= 0) {
+        return alert("الكمية نفذت بالفعل من المخزن!");
+      }
+      try {
+        const productRef = doc(db, "products", id);
+        await updateDoc(productRef, {
+          stock: currentStock - 1
+        });
+      } catch (error) {
+        alert("خطأ أثناء تحديث المخزون.");
+      }
+    };
+
+    // حذف منتج نهائياً
     window.deleteProduct = async (id) => {
-      if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+      if (confirm("هل أنت متأكد من حذف هذا المنتج نهائياً؟")) {
         try {
           await deleteDoc(doc(db, "products", id));
         } catch (error) {
