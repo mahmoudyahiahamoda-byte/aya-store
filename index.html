@@ -198,15 +198,15 @@
           }
         }
 
-        // 3. تجهيز رسالة الواتساب وفتحها أوتوماتيك على رقمك
+        // 3. تجهيز رسالة الواتساب بشكل مرتب ونظيف بدون رموز غريبة
         let totalSum = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
         let itemsDetails = cart.map(i => `- ${i.name} (العدد: ${i.qty}) = ${i.price * i.qty} ج.م`).join('\n');
         
-        let whatsappMessage = `طلب جديد من الموقع ⚡:%0A` +
-          `👤 الاسم: ${name}%0A` +
-          `📞 التليفون: ${phone}%0A` +
-          `📍 العنوان: ${addr}%0A%0A` +
-          `🛒 الأصناف المطلوبة:%0A${itemsDetails}%0A%0A` +
+        let whatsappMessage = `طلب جديد من الموقع ⚡:\n` +
+          `👤 الاسم: ${name}\n` +
+          `📞 التليفون: ${phone}\n` +
+          `📍 العنوان: ${addr}\n\n` +
+          `🛒 الأصناف المطلوبة:\n${itemsDetails}\n\n` +
           `💰 الإجمالي الكلي: ${totalSum} ج.م`;
 
         let shopWhatsAppNumber = "201229803425"; 
