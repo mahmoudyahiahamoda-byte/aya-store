@@ -34,6 +34,8 @@
     
     .cart-box input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.95rem; }
     .checkout-btn { background: var(--success); margin-top: 15px; font-size: 1.05rem; }
+    
+    .custom-request-btn { background: #25d366; color: white; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 15px; font-size: 0.95rem; }
   </style>
 </head>
 <body>
@@ -54,12 +56,31 @@
   <div class="cart-box">
     <h3 style="margin-bottom: 10px;">سلة المشتريات 🛒</h3>
     <div id="cartList" style="margin-bottom: 10px; color: #334155;">السلة فارغة حالياً</div>
-    <div id="cartTotal" style="font-weight: bold; margin-bottom: 15px; color: var(--primary);">الإجمالي: 0 ج.م</div>
+    
+    <!-- اختيار طريقة الاستلام (توصيل أو استلام من المحل) -->
+    <div style="margin: 10px 0; font-size: 0.9rem; background: #f1f5f9; padding: 10px; border-radius: 8px;">
+      <p style="margin-bottom: 8px; font-weight: bold; color: var(--primary);">طريقة الاستلام:</p>
+      <label style="margin-left: 15px; cursor: pointer;">
+        <input type="radio" name="deliveryType" value="delivery" checked onchange="updateCartUI()"> توصيل لعنواني (30 ج.م)
+      </label>
+      <label style="cursor: pointer;">
+        <input type="radio" name="deliveryType" value="pickup" onchange="updateCartUI()"> استلام من المحل (مجاناً 🏪)
+      </label>
+    </div>
+
+    <div id="cartTotal" style="font-weight: bold; margin-bottom: 5px; color: var(--primary);">إجمالي المنتجات: 0 ج.م</div>
+    <div id="shippingRow" style="margin-bottom: 5px; color: #64748b; font-size: 0.9rem;">مصاريف الشحن: <span id="shippingCost">30</span> ج.م</div>
+    <div id="grandTotal" style="font-weight: bold; margin-bottom: 15px; color: var(--success); font-size: 1.1rem;">الإجمالي الكلي: 0 ج.م</div>
     
     <input type="text" id="cName" placeholder="اسمك الكريم *">
     <input type="tel" id="cPhone" placeholder="رقم التليفون *">
     <input type="text" id="cAddr" placeholder="العنوان بالتفصيل (العجمي، البيطاش...) *">
     <button class="btn checkout-btn" onclick="checkout()">إرسال الطلب 🚀</button>
+
+    <!-- زرار طلب صنف مش موجود في المعرض -->
+    <a href="https://wa.me/201229803425?text=السلام%20عليكم،%20كنت%20باحتاج%20صنف%20معين%20وملاقتهوش%20على%20الموقع،%20هل%20متوفر%20عندكم؟" target="_blank" class="custom-request-btn">
+      💬 مش لاقي طلبك؟ اطلبه مننا واتساب مباشر
+    </a>
   </div>
 
   <script type="module">
@@ -77,11 +98,15 @@
     };
 
     const db = getFirestore(initializeApp(firebaseConfig));
-    let allProducts = [], cart = [];
+    let allProducts = [];
+    
+    // ميزة حفظ السلة (لو الموبايل قفل أو الصفحة رستر، السلة بتفضل موجودة)
+    let cart = JSON.parse(localStorage.getItem('aya_cart')) || [];
 
     onSnapshot(collection(db, "products"), (s) => {
       allProducts = s.docs.map(d => ({ id: d.id, ...d.data() }));
       renderProducts(allProducts);
+      updateCartUI(); // تحديث عرض السلة أول ما المنتجات تحمل
     });
 
     window.filterProducts = () => {
@@ -142,37 +167,51 @@
       if(existing) { existing.qty += requestedQty; }
       else { cart.push({ id: p.id, name: p.name, price: p.price, qty: requestedQty }); }
 
-      updateCartUI();
+      saveAndRefreshCart();
     };
 
     window.removeFromCart = (id) => {
       cart = cart.filter(x => x.id !== id);
-      updateCartUI();
+      saveAndRefreshCart();
     };
 
-    function updateCartUI() {
+    function saveAndRefreshCart() {
+      localStorage.setItem('aya_cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    window.updateCartUI = () => {
       const list = document.getElementById("cartList");
       const totalDiv = document.getElementById("cartTotal");
+      const grandTotalDiv = document.getElementById("grandTotal");
+      const shippingCostSpan = document.getElementById("shippingCost");
+      
+      const deliveryType = document.querySelector('input[name="deliveryType"]:checked').value;
+      let shippingValue = (deliveryType === 'delivery') ? 30 : 0;
+      shippingCostSpan.innerText = shippingValue;
       
       if(cart.length === 0) {
         list.innerHTML = "السلة فارغة حالياً";
-        totalDiv.innerHTML = "الإجمالي: 0 ج.م";
+        totalDiv.innerHTML = "إجمالي المنتجات: 0 ج.م";
+        grandTotalDiv.innerHTML = "الإجمالي الكلي: 0 ج.م";
         return;
       }
 
-      let total = 0;
+      let productsTotal = 0;
       list.innerHTML = cart.map(i => {
         let subtotal = i.price * i.qty;
-        total += subtotal;
+        productsTotal += subtotal;
         return `
           <div class="cart-item">
-            <span><b>🔹 ${i.name}</b> (العدد: ${i.qty}) - السعر: ${subtotal} ج.م</span>
+            <span><b>🔹 ${i.name}</b> (العدد: ${i.qty}) - ${subtotal} ج.م</span>
             <button class="remove-btn" onclick="window.removeFromCart('${i.id}')">حذف</button>
           </div>
         `;
       }).join('');
 
-      totalDiv.innerHTML = `الإجمالي الكلي: ${total} ج.م`;
+      let finalSum = productsTotal + shippingValue;
+      totalDiv.innerHTML = `إجمالي المنتجات: ${productsTotal} ج.م`;
+      grandTotalDiv.innerHTML = `الإجمالي الكلي: ${finalSum} ج.م`;
     }
 
     window.checkout = async () => {
@@ -184,13 +223,18 @@
       if(!name || !phone || !addr) return alert("من فضلك اكتب الاسم ورقم التليفون والعنوان بالتفصيل!");
 
       try {
-        // 1. تسجيل الطلب في قاعدة البيانات (Firebase)
+        let deliveryType = document.querySelector('input[name="deliveryType"]:checked').value;
+        let shippingFee = (deliveryType === 'delivery') ? 30 : 0;
+        let deliveryTypeText = (deliveryType === 'delivery') ? "توصيل لعنواني (30 ج.م)" : "استلام من المحل (مجاناً 🏪)";
+
+        // 1. تسجيل الطلب في قاعدة البيانات مع طريقة الاستلام
         await addDoc(collection(db, "orders"), {
           clientName: name, clientPhone: phone, clientAddress: addr,
+          deliveryType: deliveryTypeText,
           items: cart, createdAt: new Date().toLocaleString('ar-EG')
         });
 
-        // 2. خصم المخزون أوتوماتيك من قاعدة البيانات
+        // 2. خصم المخزون أوتوماتيك
         for(let item of cart) {
           const prod = allProducts.find(x => x.id === item.id);
           if(prod) {
@@ -198,23 +242,28 @@
           }
         }
 
-        // 3. تجهيز رسالة الواتساب بشكل مرتب ونظيف بدون رموز غريبة
-        let totalSum = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        let itemsDetails = cart.map(i => `▪️ الصنف: ${i.name}\n   العدد: ${i.qty} | السعر الإجمالي: ${i.price * i.qty} ج.م`).join('\n\n');
+        // 3. تجهيز رسالة الواتساب المتكاملة
+        let productsTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        let finalSum = productsTotal + shippingFee;
+        let itemsDetails = cart.map(i => `▪️ الصنف: ${i.name}\n   العدد: ${i.qty} | السعر: ${i.price * i.qty} ج.م`).join('\n\n');
         
         let whatsappMessage = `طلب جديد من الموقع ⚡:\n\n` +
           `👤 الاسم: ${name}\n` +
           `📞 التليفون: ${phone}\n` +
-          `📍 العنوان: ${addr}\n\n` +
+          `📍 العنوان: ${addr}\n` +
+          `🚚 طريقة الاستلام: ${deliveryTypeText}\n\n` +
           `🛒 الأصناف المطلوبة:\n${itemsDetails}\n\n` +
-          `💰 الإجمالي الكلي: ${totalSum} ج.م`;
+          `📦 إجمالي المنتجات: ${productsTotal} ج.م\n` +
+          `🛵 الشحن: ${shippingFee} ج.م\n` +
+          `💰 الإجمالي الكلي: ${finalSum} ج.م`;
 
         let shopWhatsAppNumber = "201229803425"; 
 
         window.open(`https://wa.me/${shopWhatsAppNumber}?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
 
-        alert("تم إرسال الطلب وحفظه في النظام وتحويلك للواتساب يا محمود! 🚀");
+        alert("تم إرسال الطلب وحفظه بنجاح يا محمود! 🚀");
         cart = [];
+        localStorage.removeItem('aya_cart'); // مسح ذاكرة السلة بعد اكتمال الطلب
         updateCartUI();
         document.getElementById("cName").value = "";
         document.getElementById("cPhone").value = "";
