@@ -392,8 +392,8 @@
             projectId: "aya-store-db575",
             storageBucket: "aya-store-db575.firebasestorage.app",
             messagingSenderId: "853849172787",
-            appId: "1:853849172787:web:6257b8397b8b073710ec46",
-            measurementId: "G-8NWP7KK3K5"
+            appId: "1:853849172787:web:f5655375d70d6a6c10ec46",
+            measurementId: "G-5FY4XD0H9N"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -476,22 +476,45 @@
             select.innerHTML = '<option value="">اختر الفئة</option>' + categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
+        // دالة ضغط الصورة قبل الحفظ
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = height * (maxWidth / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    callback(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            if (file.size > 2 * 1024 * 1024) {
-                showToast('حجم الصورة كبير جدًا، الحد الأقصى 2 ميجابايت');
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('حجم الصورة كبير جدًا، الحد الأقصى 10 ميجابايت');
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('productImageData').value = e.target.result;
-                document.getElementById('productImagePreview').src = e.target.result;
+            compressImage(file, 800, 0.7, function(compressedDataUrl) {
+                document.getElementById('productImageData').value = compressedDataUrl;
+                document.getElementById('productImagePreview').src = compressedDataUrl;
                 document.getElementById('productImagePreview').style.display = 'block';
                 document.getElementById('imagePlaceholder').style.display = 'none';
                 showToast('تم تحميل الصورة بنجاح');
-            };
-            reader.readAsDataURL(file);
+            });
         }
 
         function clearImage() {
