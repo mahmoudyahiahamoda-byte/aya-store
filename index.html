@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض ايه - أدوات كهربائية وصحية</title>
+    <meta name="description" content="معرض ايه متجر متخصص في بيع الأدوات الكهربائية والأدوات الصحية وقطع غيار الأجهزة الكهربائية. توصيل لجميع المحافظات.">
+    <meta name="keywords" content="معرض ايه, أدوات كهربائية, أدوات صحية, قطع غيار, متجر الكتروني, اسكندرية">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="معرض ايه - أدوات كهربائية وصحية">
+    <meta property="og:description" content="معرض ايه - تسوق الآن أفضل الأدوات الكهربائية والصحية وقطع الغيار.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mahmoudyahiahamoda-byte.github.io/aya-store/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -11,6 +18,25 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "معرض ايه",
+      "description": "متجر لبيع الأدوات الكهربائية والأدوات الصحية وقطع غيار الأجهزة الكهربائية",
+      "url": "https://mahmoudyahiahamoda-byte.github.io/aya-store/",
+      "telephone": "01229803425",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "الإسكندرية",
+        "addressCountry": "EG"
+      },
+      "sameAs": [
+        "#",
+        "#"
+      ]
+    }
+    </script>
     <style>
         :root{
             --primary:#e67e22; --primary-dark:#d35400; --secondary:#2c3e50;
@@ -131,6 +157,20 @@
         <div class="dark-toggle" onclick="toggleDark()" title="الوضع الداكن"><i class="fas fa-moon"></i></div>
         <div class="cart-icon" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></div>
     </div>
+
+    <!-- عنوان رئيسي ثابت لتحسين SEO -->
+    <h1 style="text-align:center;padding:10px;font-size:1.8rem;color:var(--primary);margin:0;">معرض ايه للأدوات الكهربائية والصحية</h1>
+
+    <!-- محتوى ثابت لتحسين الفهرسة -->
+    <section style="padding:15px;">
+        <h2>أدوات كهربائية للبيع</h2>
+        <p>نوفر جميع أنواع الأدوات الكهربائية: مفاتيح، أسلاك، عدادات، سخانات، لمبات، وأجهزة قياس.</p>
+        <h2>أدوات صحية</h2>
+        <p>خلاطات مياه، سخانات، صمامات أمان، مواسير، وأطقم حمامات.</p>
+        <h2>قطع غيار أجهزة كهربائية</h2>
+        <p>قطع غيار أصلية لجميع الأجهزة المنزلية.</p>
+    </section>
+
     <div class="categories-bar" id="categoriesBar"><button class="category-btn active" data-category="all">الكل</button></div>
     <div class="sort-filter">
         <select id="sortSelect" onchange="renderProducts()">
